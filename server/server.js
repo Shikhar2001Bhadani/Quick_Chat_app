@@ -5,41 +5,40 @@ import { connectDB } from "./db/connection1.db.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-// ✅ Load environment variables
 dotenv.config();
 
-// ✅ Connect to MongoDB
 connectDB();
 
-// ✅ Middleware
+
+app.use(express.json());
+app.use(cookieParser());
+
+const allowedOrigins = process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(",") : [process.env.CLIENT_URL];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: allowedOrigins,
     credentials: true,
   })
 );
 
-app.use('/',(req,res)=>{
-  res.send({
+app.get("/", (req, res) => {
+  res.status(200).json({
     activeStatus: true,
-    error:false,
-  })
-})
-app.use(express.json());
-app.use(cookieParser());
+    error: false,
+    message: "Server is running 🚀",
+  });
+});
 
-// ✅ Routes
 import userRoute from "./routes/user.route.js";
 import messageRoute from "./routes/message.route.js";
 
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/message", messageRoute);
 
-// ✅ Error Handling Middleware
 import { errorMiddleware } from "./middlewares/error.middlware.js";
 app.use(errorMiddleware);
 
-// ✅ Start Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
