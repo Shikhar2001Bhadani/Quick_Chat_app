@@ -18,6 +18,13 @@ app.use(
     credentials: true,
   })
 );
+
+app.use('/',(req,res)=>{
+  res.send({
+    activeStatus: true,
+    error:false,
+  })
+})
 app.use(express.json());
 app.use(cookieParser());
 
