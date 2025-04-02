@@ -1,19 +1,19 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import { app, server } from "./socket/socket.js";
 import express from "express";
+import dotenv from "dotenv";
 import { connectDB } from "./db/connection1.db.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
+dotenv.config();
+
 connectDB();
+
 
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Support Multiple Origins
-const allowedOrigins = process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(",") : [];
+const allowedOrigins = process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(",") : [process.env.CLIENT_URL];
 
 app.use(
   cors({

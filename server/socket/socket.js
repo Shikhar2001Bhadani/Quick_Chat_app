@@ -6,54 +6,36 @@ import http from "http";
 import express from "express";
 
 const app = express();
-const server = http.createServer(app);
 
-// ✅ Support Multiple Frontend URLs for WebSocket
-const allowedOrigins = process.env.CLIENT_URLS ? process.env.CLIENT_URLS.split(",") : [];
+const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
-    credentials: true,
+    origin: process.env.CLIENT_URL,
   },
 });
 
-// ✅ Store Active User Connections
-const userSocketMap = {};
-
-// ✅ Function to Get User's Socket ID
-const getSocketId = (userId) => {
-  return userSocketMap[userId];
-};
+const userSocketMap = {
+    // userId : socketId,
+}
 
 io.on("connection", (socket) => {
-  console.log(`🔗 New client connected: ${socket.id}`);
-
   const userId = socket.handshake.query.userId;
 
-  if (userId) {
-    userSocketMap[userId] = socket.id;
-    io.emit("onlineUsers", Object.keys(userSocketMap)); // Send online users list
-  }
+  if (!userId) return;
 
-  // ✅ Handle Sending Messages
-  socket.on("sendMessage", ({ senderId, receiverId, message }) => {
-    const receiverSocketId = getSocketId(receiverId);
+  userSocketMap[userId] = socket.id;
 
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("messageReceived", { senderId, message });
-    }
-  });
+  io.emit("onlineUsers", Object.keys(userSocketMap))
 
-  // ✅ Handle Disconnects
   socket.on("disconnect", () => {
-    console.log(`❌ Client disconnected: ${socket.id}`);
-
-    if (userId) {
-      delete userSocketMap[userId];
-      io.emit("onlineUsers", Object.keys(userSocketMap)); // Update online users list
-    }
+    delete userSocketMap[userId];
+    io.emit("onlineUsers", Object.keys(userSocketMap));
   });
 });
+
+const getSocketId = (userId) =>{
+    return userSocketMap[userId];
+}
 
 export { io, app, server, getSocketId };
